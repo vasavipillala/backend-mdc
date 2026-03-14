@@ -14,7 +14,7 @@ app.use(cors());
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-const { User,sequelize,UserFollowers,FollowRequest,Chat,Message } = require("./mdc-bk/db");
+const { User,sequelize,UserFollowers,FollowRequest,Chat,Message } = require("./db");
 
 // ✅ Setup nodemailer transporter
 const transporter = nodemailer.createTransport({
@@ -62,7 +62,6 @@ app.post('/admin/login', async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 app.post("/register-email", async (req, res) => {
   try {
@@ -360,9 +359,9 @@ app.get("/check-uniqueId/:uniqueId", async (req, res) => {
     });
   }
 });
-const authenticate = require("./mdc-bk/src/middleware/auth/Authentication");
 
-// Complete profile / registration
+const authenticate = require("./src/middleware/auth/Authentication");
+
 app.post("/register/:userId", authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -465,7 +464,6 @@ app.post("/register/:userId", authenticate, async (req, res) => {
   }
 });
 
-// GET all verified users
 app.get("/users", authenticate, async (req, res) => {
   try {
     // Fetch all verified users
@@ -515,7 +513,6 @@ app.get("/users", authenticate, async (req, res) => {
     });
   }
 });
-
 
 app.get("users/:id", authenticate, async (req, res) => {
   try {
@@ -588,30 +585,32 @@ process.on("SIGINT", () => {
     process.exit(0);
   });
 });
+
 const { Op } = require("sequelize");
 const http = require("http");
-const setupSocket = require("./mdc-bk/src/routes/Socket"); // 👆 from above file
+const setupSocket = require("./src/routes/Socket");
 const path = require("path");
 const server = http.createServer(app);
 const io = setupSocket(server);
-const chatRoutes = require("./mdc-bk/src/routes/Chat")(io)
-const groupRoute = require("./mdc-bk/src/routes/GroupRoute")
-const profileRoute = require("./mdc-bk/src/routes/Profile")
-const userRoute = require("./mdc-bk/src/routes/UserRoute")
+const chatRoutes = require("./src/routes/Chat")(io)
+const groupRoute = require("./src/routes/GroupRoute")
+const profileRoute = require("./src/routes/Profile")
+const userRoute = require("./src/routes/UserRoute")
 app.use("/users", userRoute);
 app.use("/chats", chatRoutes);
 app.use("/groups", groupRoute);
-// ✅ Serve uploaded profile images publicly
+
 app.use("/uploads/profile", express.static(path.join(__dirname, "uploads/profile")));
 app.use("/uploads/posts", express.static(path.join(__dirname, "uploads/posts")));
-//app.use("/uploads/profile", express.static("uploads/profile"));
 app.use("/profile",profileRoute)
-const postRoutes = require("./mdc-bk/src/routes/PostRoute");
+
+const postRoutes = require("./src/routes/PostRoute");
 app.use("/posts", postRoutes);
 
 server.listen(4000, () => {
   console.log("🚀 Server running on http://localhost:4000");
 });
+
 app.get("/message/:chatId", async (req, res) => {
   try {
     const { chatId } = req.params;
@@ -780,10 +779,6 @@ app.get("/getMessageRequests/:userId", async (req, res) => {
     });
   }
 });
-
-
-// ✅ Get all message friends
-
 
 app.get("/messages/friends/:userId", async (req, res) => {
   const { userId } = req.params;

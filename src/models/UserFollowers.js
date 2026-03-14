@@ -3,20 +3,23 @@ module.exports = (sequelize, DataTypes) => {
     followerId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "follower_id",
       references: { model: "Users", key: "id" },
       onDelete: "CASCADE",
     },
     followingId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      field: "following_id",
       references: { model: "Users", key: "id" },
       onDelete: "CASCADE",
     },
   }, {
+    underscored: true,
     indexes: [
       {
         unique: true,
-        fields: ["followerId", "followingId"] // prevent duplicate follows
+        fields: ["follower_id", "following_id"]
       }
     ]
   });
