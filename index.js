@@ -607,7 +607,7 @@ app.use("/profile",profileRoute)
 const postRoutes = require("./src/routes/PostRoute");
 app.use("/posts", postRoutes);
 
-server.listen(4000, () => {
+server.listen(4000, "0.0.0.0", () => {
   console.log("🚀 Server running on http://localhost:4000");
 });
 
