@@ -124,5 +124,5 @@ module.exports = {
   PostComment,
   PostReport,
   SavedPost,
-  ChatUser,
+  ChatUser
 };
