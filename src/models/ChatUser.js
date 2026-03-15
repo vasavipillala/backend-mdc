@@ -9,8 +9,10 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: "ChatUsers",   // important
-      timestamps: true
+   tableName: "ChatUsers",
+      schema: "public",
+      timestamps: false,
+      freezeTableName: true,
     }
   );
 
