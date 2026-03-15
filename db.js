@@ -43,7 +43,7 @@ const UserFollowers = require("./src/models/UserFollowers")(sequelize, DataTypes
 const FollowRequest = require("./src/models/FollowRequest")(sequelize, DataTypes);
 const Chat = require("./src/models/Chat")(sequelize, DataTypes);
 const Message = require("./src/models/Message")(sequelize, DataTypes);
-const ChatUser = require("./src/models/ChatUser")(sequelize, DataTypes); // add this
+const ChatUsers = require("./src/models/ChatUser")(sequelize, DataTypes); // add this
 // Group-related models
 const Group = require("./src/models/Group")(sequelize, DataTypes);
 const GroupMember = require("./src/models/GroupMember")(sequelize, DataTypes);
@@ -67,12 +67,13 @@ if (User.associate) {
     Message,
     Group,
     UploadPosts,
-    ChatUser
+    ChatUsers
   });
 }
 
 if (UserFollowers.associate) UserFollowers.associate({ User });
 if (FollowRequest.associate) FollowRequest.associate({ User });
+if (ChatUsers.associate) ChatUsers.associate({ User });
 
 if (Chat.associate) Chat.associate({ User, Message });
 if (Message.associate) Message.associate({ Chat, User });
@@ -102,11 +103,11 @@ if (PostReport.associate) PostReport.associate({ UploadPosts, User });
 // ❌ DO NOT pass SavedPost to itself
 if (SavedPost.associate) SavedPost.associate({ User, UploadPosts });
 
-// 5️⃣ Sync database
-// sequelize
-//   .sync({ alter: true })
-//   .then(() => console.log("✅ Tables synced successfully"))
-//   .catch((err) => console.error("❌ Sync error:", err));
+//5️⃣ Sync database
+sequelize
+  .sync({ alter: true })
+  .then(() => console.log("✅ Tables synced successfully"))
+  .catch((err) => console.error("❌ Sync error:", err));
 
 // 6️⃣ Export all models
 module.exports = {
@@ -124,5 +125,5 @@ module.exports = {
   PostComment,
   PostReport,
   SavedPost,
-  ChatUser
+  ChatUsers,
 };

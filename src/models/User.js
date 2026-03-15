@@ -58,7 +58,7 @@ module.exports = (sequelize, DataTypes) => {
 
     // Chat participants
     User.belongsToMany(models.Chat, {
-      through: "ChatUsers",
+      through: "ChatUser",
       as: "participants",
       foreignKey: "userId",
       otherKey: "chatId",
