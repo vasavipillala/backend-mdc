@@ -16,10 +16,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: "user"
     },
 
-    accountType: {
-      type: DataTypes.ENUM("public", "private"),
-      defaultValue: "public"
-    },
+   accountType: {
+  type: DataTypes.ENUM("public", "private"),
+  defaultValue: "public",
+  field: "account_type" // ✅ REQUIRED
+},
 
     uniqueId: { type: DataTypes.STRING, unique: true },
     isPremium: { type: DataTypes.BOOLEAN, defaultValue: false },

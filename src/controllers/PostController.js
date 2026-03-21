@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op ,Sequelize} = require("sequelize");
 const { User, UploadPosts, FollowRequest,PostLike,PostComment,PostReport,SavedPost  } = require("../../db");
 const fs = require("fs");
 const path = require("path");
@@ -54,18 +54,25 @@ exports.getHomeFeedCursor = async (req, res) => {
     );
 
     // ✅ 2. Base condition (IMPORTANT: SOFT DELETE FILTER)
-    let whereCondition = {
-      isDeleted: false,   // 🔥 hide soft-deleted posts
+ let whereCondition = {
+  isDeleted: false,
 
-      [Op.or]: [
-         { userId: userId },
-        { userId: [userId, ...connectionIds] },
+  [Op.or]: [
+    { userId: [userId, ...connectionIds] },
+
+    {
+      [Op.and]: [
+        Sequelize.where(
+          Sequelize.col("user.account_type"),
+          "public"
+        ),
         {
-          "$user.accountType$": "public",
           userId: { [Op.notIn]: [userId, ...connectionIds] },
         },
       ],
-    };
+    },
+  ],
+};
 
     // ✅ 3. Cursor Pagination
     if (cursor) {
@@ -151,7 +158,6 @@ exports.getHomeFeedCursor = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 exports.toggleLike = async (req, res) => {
   try {

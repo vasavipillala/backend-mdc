@@ -56,6 +56,8 @@ const PostComment = require("./src/models/PostComment")(sequelize, DataTypes);
 const PostReport = require("./src/models/PostReport")(sequelize, DataTypes);
 const SavedPost = require("./src/models/SavedPost")(sequelize, DataTypes);
 
+//Admin
+const Admin = require("./src/admin/models/AdminModel")(sequelize, DataTypes);
 // 4️⃣ Run associations
 
 if (User.associate) {
@@ -82,6 +84,8 @@ if (Message.associate) Message.associate({ Chat, User });
 if (Group.associate) Group.associate({ GroupMember, GroupMessage, User });
 if (GroupMember.associate) GroupMember.associate({ Group, User });
 if (GroupMessage.associate) GroupMessage.associate({ Group, User });
+
+
 
 // ✅ Post associations (FIXED & SAFE)
 if (UploadPosts.associate) {
@@ -126,4 +130,5 @@ module.exports = {
   PostReport,
   SavedPost,
   ChatUsers,
+  Admin  
 };

@@ -596,6 +596,10 @@ const chatRoutes = require("./src/routes/Chat")(io)
 const groupRoute = require("./src/routes/GroupRoute")
 const profileRoute = require("./src/routes/Profile")
 const userRoute = require("./src/routes/UserRoute")
+
+const adminRoutes = require("./src/admin/adminRoute/AdminRoute");
+app.use("/adminLogin", adminRoutes);
+
 app.use("/users", userRoute);
 app.use("/chats", chatRoutes);
 app.use("/groups", groupRoute);
@@ -606,6 +610,8 @@ app.use("/profile",profileRoute)
 
 const postRoutes = require("./src/routes/PostRoute");
 app.use("/posts", postRoutes);
+
+
 
 server.listen(4000, "0.0.0.0", () => {
   console.log("🚀 Server running on http://localhost:4000");
