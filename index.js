@@ -301,6 +301,140 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message_type: "error",
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({
+        message_type: "error",
+        message: "User not found",
+      });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP is ${otp}. It expires in 10 minutes.`,
+    });
+
+    res.status(200).json({
+      message_type: "success",
+      message: "OTP sent to email",
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message_type: "error",
+      message: "Server error",
+    });
+  }
+});
+
+app.post("/verify-forgot-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({
+        message_type: "error",
+        message: "User not found",
+      });
+    }
+
+    if (!user.otp || user.otp !== otp || user.otpExpiry < new Date()) {
+      return res.status(400).json({
+        message_type: "error",
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Mark OTP verified (optional flag)
+    user.otp = null;
+    user.otpExpiry = null;
+    await user.save();
+
+    res.status(200).json({
+      message_type: "success",
+      message: "OTP verified successfully",
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message_type: "error",
+      message: "Server error",
+    });
+  }
+});
+
+app.post("/reset-password", async (req, res) => {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    if (!email || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        message_type: "error",
+        message: "All fields are required",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message_type: "error",
+        message: "Passwords do not match",
+      });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({
+        message_type: "error",
+        message: "User not found",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({
+      message_type: "success",
+      message: "Password reset successfully",
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message_type: "error",
+      message: "Server error",
+    });
+  }
+});
+
 app.get("/check-uniqueId/:uniqueId", async (req, res) => {
   try {
     const { uniqueId } = req.params;
@@ -613,7 +747,7 @@ app.use("/posts", postRoutes);
 
 
 
-server.listen(4000, "0.0.0.0", () => {
+server.listen(4000, () => {
   console.log("🚀 Server running on http://localhost:4000");
 });
 

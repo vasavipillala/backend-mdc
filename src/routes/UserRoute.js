@@ -105,24 +105,38 @@ router.post("/follow/:id", authenticate, async (req, res) => {
     const requesterId = req.user.id;
     const targetId = parseInt(req.params.id);
 
+    // ✅ Validate IDs
+    console.log("requesterId:", requesterId);
+console.log("targetId:", targetId);
+    if (!requesterId || !targetId) {
+      return res.status(400).json({
+        message: "Invalid requester or target ID",
+      });
+    }
+
     if (requesterId === targetId) {
       return res.status(400).json({
-        message_type: "error",
-        status_code: 400,
         message: "Cannot connect to yourself",
       });
     }
 
+    // ✅ Fetch users
+    const requester = await User.findByPk(requesterId);
     const targetUser = await User.findByPk(targetId);
-    if (!targetUser) {
-      return res.status(404).json({
-        message_type: "error",
-        status_code: 404,
-        message: "User not found",
+
+    if (!requester) {
+      return res.status(400).json({
+        message: "Requester user not found",
       });
     }
 
-    // Check if connection or request already exists
+    if (!targetUser) {
+      return res.status(404).json({
+        message: "Target user not found",
+      });
+    }
+
+    // ✅ Check existing request
     const existing = await FollowRequest.findOne({
       where: {
         [Op.or]: [
@@ -134,13 +148,11 @@ router.post("/follow/:id", authenticate, async (req, res) => {
 
     if (existing) {
       return res.status(400).json({
-        message_type: "error",
-        status_code: 400,
         message: "Connection or request already exists",
       });
     }
 
-    // Determine connection behavior based on account type
+    // ✅ Decide status
     let status = "pending";
     let isRequest = "requested";
 
@@ -149,49 +161,39 @@ router.post("/follow/:id", authenticate, async (req, res) => {
       isRequest = "connection";
     }
 
-    // Create follow request
+    // ✅ Create request
     const request = await FollowRequest.create({
       requesterId,
       targetId,
       status,
     });
 
-    // If public, ensure mutual connection
+    // ✅ Auto mutual connection for public accounts
     if (status === "accepted") {
       await FollowRequest.findOrCreate({
-        where: { requesterId: targetId, targetId: requesterId },
+        where: {
+          requesterId: targetId,
+          targetId: requesterId,
+        },
         defaults: { status: "accepted" },
       });
     }
 
     return res.status(200).json({
-      message_type: "success",
-      status_code: 200,
-      message:
-        status === "accepted"
-          ? "Connection established successfully"
-          : "Connection request sent successfully",
+      message: status === "accepted"
+        ? "Connection established successfully"
+        : "Connection request sent successfully",
       data: {
         requestId: request.id,
         isRequest,
         status,
-        targetUser: {
-          id: targetUser.id,
-          uniqueId: targetUser.uniqueId,
-          name: targetUser.fullName,
-          avatar: targetUser.image,
-          occupation: targetUser.occupation,
-          goal: targetUser.goal || null,
-          accountType: targetUser.accountType,
-        },
       },
     });
 
   } catch (error) {
     console.error("❌ Error sending connection request:", error);
+
     return res.status(500).json({
-      message_type: "error",
-      status_code: 500,
       message: "Server error while sending connection request",
     });
   }

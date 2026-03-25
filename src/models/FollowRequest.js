@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         field: "requester_id",
-        references: { model: "Users", key: "id" },
+        references: { model: "users", key: "id" }, // ✅ FIXED
         onDelete: "CASCADE",
       },
 
@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         field: "target_id",
-        references: { model: "Users", key: "id" },
+        references: { model: "users", key: "id" }, // ✅ FIXED
         onDelete: "CASCADE",
       },
 
@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       indexes: [
         {
           unique: true,
-          fields: ["requester_id", "target_id"], // snake_case
+          fields: ["requester_id", "target_id"],
         },
       ],
     }
