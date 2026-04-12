@@ -333,7 +333,6 @@ router.delete("/requests/withdraw/:id", authenticate, async (req, res) => {
   }
 });
 
-
 router.post("/requests/accept/:id", authenticate, async (req, res) => {
   try {
     const currentUserId = req.user.id;

@@ -55,6 +55,12 @@ const PostLike = require("./src/models/PostLike")(sequelize, DataTypes);
 const PostComment = require("./src/models/PostComment")(sequelize, DataTypes);
 const PostReport = require("./src/models/PostReport")(sequelize, DataTypes);
 const SavedPost = require("./src/models/SavedPost")(sequelize, DataTypes);
+const NotInterestedPost =  require("./src/models/NotInterestedPost")(sequelize, DataTypes);
+// ===== ABOUT MODELS =====
+const UserStory = require("./src/models/abouts/UserStory")(sequelize, DataTypes);
+const Experience = require("./src/models/abouts/Experience")(sequelize, DataTypes);
+const Education = require("./src/models/abouts/Education")(sequelize, DataTypes);
+const UserLink = require("./src/models/abouts/UserLink")(sequelize, DataTypes);
 
 //Admin
 const Admin = require("./src/admin/models/AdminModel")(sequelize, DataTypes);
@@ -69,7 +75,8 @@ if (User.associate) {
     Message,
     Group,
     UploadPosts,
-    ChatUsers
+    ChatUsers,
+    UserStory,
   });
 }
 
@@ -85,6 +92,22 @@ if (Group.associate) Group.associate({ GroupMember, GroupMessage, User });
 if (GroupMember.associate) GroupMember.associate({ Group, User });
 if (GroupMessage.associate) GroupMessage.associate({ Group, User });
 
+if (UserStory.associate) UserStory.associate({ User });
+// Story
+// User.hasOne(UserStory, { foreignKey: "userId" });
+// UserStory.belongsTo(User);
+
+// Experience
+User.hasMany(Experience, { foreignKey: "userId" });
+Experience.belongsTo(User);
+
+// Education
+User.hasMany(Education, { foreignKey: "userId" });
+Education.belongsTo(User);
+
+// Links
+User.hasMany(UserLink, { foreignKey: "userId" });
+UserLink.belongsTo(User);
 
 
 // ✅ Post associations (FIXED & SAFE)
@@ -95,6 +118,7 @@ if (UploadPosts.associate) {
     PostComment,
     PostReport,
     SavedPost, // ✅ REQUIRED
+    NotInterestedPost
   });
 }
 
@@ -106,6 +130,7 @@ if (PostReport.associate) PostReport.associate({ UploadPosts, User });
 
 // ❌ DO NOT pass SavedPost to itself
 if (SavedPost.associate) SavedPost.associate({ User, UploadPosts });
+if (NotInterestedPost.associate) NotInterestedPost.associate({ User, UploadPosts });
 
 //5️⃣ Sync database
 sequelize
@@ -129,6 +154,13 @@ module.exports = {
   PostComment,
   PostReport,
   SavedPost,
+  NotInterestedPost,
   ChatUsers,
-  Admin  
+  Admin ,
+
+  // ✅ ADD THESE
+  UserStory,
+  Experience,
+  Education,
+  UserLink,
 };

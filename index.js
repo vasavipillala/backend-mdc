@@ -301,6 +301,53 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.post("/logout", async (req, res) => {
+  try {
+    const { userId, refresh_token } = req.body;
+
+    if (!userId || !refresh_token) {
+      return res.status(400).json({
+        message_type: "error",
+        message: "UserId and refresh token required",
+      });
+    }
+
+    // Find user
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message_type: "error",
+        message: "User not found",
+      });
+    }
+
+    // Check refresh token match
+    if (user.refreshToken !== refresh_token) {
+      return res.status(403).json({
+        message_type: "error",
+        message: "Invalid refresh token",
+      });
+    }
+
+    // ✅ Remove refresh token
+    user.refreshToken = null;
+    await user.save();
+
+    return res.status(200).json({
+      message_type: "success",
+      message: "Logged out successfully",
+    });
+
+  } catch (error) {
+    console.error("❌ Logout Error:", error);
+    return res.status(500).json({
+      message_type: "error",
+      message: "Server error during logout",
+    });
+  }
+});
+
 app.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -743,6 +790,10 @@ app.use("/uploads/posts", express.static(path.join(__dirname, "uploads/posts")))
 app.use("/profile",profileRoute)
 
 const postRoutes = require("./src/routes/PostRoute");
+
+const aboutStory = require("./src/routes/about/AboutStory");
+app.use("/about",aboutStory)
+
 app.use("/posts", postRoutes);
 
 

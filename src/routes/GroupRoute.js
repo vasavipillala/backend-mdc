@@ -15,14 +15,15 @@ const { createGroup,getGroups,getGroupMessages,getMyGroups,
   transferOwnership,
   getPendingJoinRequests,
   getGroupDetails,
-  getGoalPublicGroups} = require("../controllers/GroupController");
+  getGoalPublicGroups,
+  getSuggestedGroups} = require("../controllers/GroupController");
 const {  User,Group,GroupMember,GroupMessage } = require("../../db");
 // POST /api/groups/create
 const authenticate = require("../middleware/auth/Authentication");
 router.post("/create",authenticate, createGroup);
 router.get("/total/groups", getGroups);
 router.get("/messages/:groupId", getGroupMessages)
-router.get("/mygroups",authenticate, getMyGroups)
+router.get("/mygroups",authenticate, getMyGroups) 
 router.post("/add/members/:groupId",authenticate, addMemberToGroup)
 router.get("/user/public/:userId", getUserPublicGroups);
 //router.get("/userinvolved/public//:userId", getUserInvolvedPublicGroups);
@@ -43,6 +44,7 @@ router.post("/acceptlink/:inviteToken",authenticate, acceptInviteLink)
 router.get("/pendingrequests/:groupId", getPendingJoinRequests);
 router.get("/get/:groupId/",authenticate, getGroupDetails);
 router.get("/public",authenticate, getGoalPublicGroups);
+router.get("/public/suggestion",authenticate, getSuggestedGroups);
 router.get("/get", async (req, res) => {
   try {
     const userId = req.user?.id || req.query.userId;

@@ -1175,7 +1175,66 @@ exports.getGroupDetails = async (req, res) => {
   }
 };
 
+exports.getSuggestedGroups = async (req, res) => {
+  try {
+    const limit = Number(req.query.limit) || 10;
+    const userId = req.user.id;
 
+    // get user data
+    const user = await User.findByPk(userId, {
+      attributes: ["goal", "occupation"],
+    });
+
+    const groups = await Group.findAll({
+      where: {
+        type: "public",
+        schoolId: null,
+        [Sequelize.Op.or]: [
+          { goal: user.goal },
+          { profession: user.profession },
+        ],
+      },
+      attributes: [
+        "id",
+        "name",
+        [
+          Sequelize.fn("COUNT", Sequelize.col("groupMembers.id")),
+          "memberCount",
+        ],
+      ],
+      include: [
+        {
+          model: GroupMember,
+          as: "groupMembers",
+          attributes: [],
+          required: false,
+        },
+      ],
+      group: ["Group.id"],
+      order: [[Sequelize.literal('"memberCount"'), "DESC"]],
+      limit,
+      subQuery: false,
+    });
+
+    const formatted = groups.map((g, index) => ({
+      id: `s${index + 1}`,
+      groupId: g.id,
+      name: g.name,
+      members: formatCount(Number(g.get("memberCount"))),
+    }));
+
+    return res.json({
+      success: true,
+      data: formatted,
+    });
+  } catch (error) {
+    console.error("Suggested Groups Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
 
 

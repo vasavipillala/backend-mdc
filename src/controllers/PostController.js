@@ -1,5 +1,5 @@
 const { Op ,Sequelize} = require("sequelize");
-const { User, UploadPosts, FollowRequest,PostLike,PostComment,PostReport,SavedPost  } = require("../../db");
+const { User, UploadPosts, FollowRequest,PostLike,PostComment,PostReport,SavedPost,NotInterestedPost  } = require("../../db");
 const fs = require("fs");
 const path = require("path");
 
@@ -531,6 +531,36 @@ exports.getMySavedPosts = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+
+exports.toggleNotInterestedPost = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { postId } = req.params;
+
+    const existing = await NotInterestedPost.findOne({
+      where: { userId, postId },
+    });
+
+    if (existing) {
+      await existing.destroy();
+
+      return res.json({
+        message: "Post restored",
+        isNotInterested: false,
+      });
+    }
+
+    await NotInterestedPost.create({ userId, postId });
+
+    return res.json({
+      message: "Post hidden",
+      isNotInterested: true,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 

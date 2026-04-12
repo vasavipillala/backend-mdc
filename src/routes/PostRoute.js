@@ -1,6 +1,6 @@
 // routes/postRoutes.js
 const express = require("express");
-const { createPost, getHomeFeedCursor,toggleLike, addComment, deleteComment, getCommentsByPost, reportPost, deletePost, getMyPosts, getMyVideos,toggleSavePost,getMySavedPosts } = require("../controllers/PostController");
+const { createPost, getHomeFeedCursor,toggleLike, addComment, deleteComment, getCommentsByPost, reportPost, deletePost, getMyPosts, getMyVideos,toggleSavePost,getMySavedPosts,toggleNotInterestedPost } = require("../controllers/PostController");
 const upload = require("../middleware/Upload");
 const authenticate = require("../middleware/auth/Authentication");
 const router = express.Router();
@@ -19,6 +19,6 @@ router.get("/myposts/:userId", getMyPosts);
 router.get("/myvideos/:userId", getMyVideos);
 router.post("/saved/:postId",authenticate, toggleSavePost);
 router.get("/saved",authenticate, getMySavedPosts);
-
+router.post("/notInterested/:postId",authenticate, toggleNotInterestedPost);
 
 module.exports = router;
