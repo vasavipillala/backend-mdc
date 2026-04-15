@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    blockedBy: {
+  type: DataTypes.INTEGER,
+  allowNull: true,
+}
   });
 
   Chat.associate = (models) => {

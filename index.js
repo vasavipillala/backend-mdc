@@ -16,6 +16,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 const { User,sequelize,UserFollowers,FollowRequest,Chat,Message } = require("./db");
 
+const authenticate = require("./src/middleware/auth/Authentication");
 // ✅ Setup nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail", // or use "smtp" config
@@ -303,16 +304,15 @@ app.post("/login", async (req, res) => {
 
 app.post("/logout", async (req, res) => {
   try {
-    const { userId, refresh_token } = req.body;
+    const { userId } = req.body;
 
-    if (!userId || !refresh_token) {
+    if (!userId) {
       return res.status(400).json({
         message_type: "error",
-        message: "UserId and refresh token required",
+        message: "UserId required",
       });
     }
 
-    // Find user
     const user = await User.findByPk(userId);
 
     if (!user) {
@@ -322,15 +322,7 @@ app.post("/logout", async (req, res) => {
       });
     }
 
-    // Check refresh token match
-    if (user.refreshToken !== refresh_token) {
-      return res.status(403).json({
-        message_type: "error",
-        message: "Invalid refresh token",
-      });
-    }
-
-    // ✅ Remove refresh token
+    // ✅ Just remove refresh token
     user.refreshToken = null;
     await user.save();
 
@@ -340,10 +332,45 @@ app.post("/logout", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Logout Error:", error);
+    console.error("Logout Error:", error);
     return res.status(500).json({
       message_type: "error",
       message: "Server error during logout",
+    });
+  }
+});
+
+app.delete("/delete-account", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message_type: "error",
+        message: "User not found",
+      });
+    }
+
+    // ✅ remove refresh token (logout everywhere)
+    user.refreshToken = null;
+    await user.save();
+
+    // ✅ delete user
+    await user.destroy();
+
+    return res.status(200).json({
+      message_type: "success",
+      message: "Account deleted successfully",
+    });
+
+  } catch (error) {
+    console.error("Delete Account Error:", error);
+
+    return res.status(500).json({
+      message_type: "error",
+      message: "Server error while deleting account",
     });
   }
 });
@@ -541,7 +568,7 @@ app.get("/check-uniqueId/:uniqueId", async (req, res) => {
   }
 });
 
-const authenticate = require("./src/middleware/auth/Authentication");
+
 
 app.post("/register/:userId", authenticate, async (req, res) => {
   try {

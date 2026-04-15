@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
     occupation: DataTypes.STRING,
     goal: DataTypes.STRING,
 
+      bio: DataTypes.TEXT,
+
+
     type: {
       type: DataTypes.ENUM("mentor", "school", "business", "user"),
       defaultValue: "user"
@@ -84,6 +87,8 @@ module.exports = (sequelize, DataTypes) => {
     });
 
   };
+
+
 
 
   return User;

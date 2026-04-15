@@ -100,6 +100,154 @@ router.get("/messages/:chatId", authenticate, async (req, res) => {
   }
 });
 
+router.post("/accept-request", authenticate, async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    const userId = req.user.id; // logged in user
+
+    const chat = await Chat.findByPk(chatId);
+
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    // Only receiver can accept
+    if (chat.requestSenderId === userId) {
+      return res.status(403).json({
+        message: "Sender cannot accept request",
+      });
+    }
+
+    await chat.update({
+      requestStatus: "accepted",
+      isMsgReqAccepted: true,
+    });
+
+    return res.json({
+      message: "Chat request accepted",
+      chatId,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error accepting request",
+      error: error.message,
+    });
+  }
+});
+
+router.post("/decline-request", authenticate, async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    const userId = req.user.id;
+
+    const chat = await Chat.findByPk(chatId);
+
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    if (chat.requestSenderId === userId) {
+      return res.status(403).json({
+        message: "Sender cannot decline request",
+      });
+    }
+
+    await chat.update({
+      requestStatus: "declined",
+      isMsgReqAccepted: false,
+    });
+
+    return res.json({
+      message: "Chat request declined",
+      chatId,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error declining request",
+      error: error.message,
+    });
+  }
+});
+
+router.post("/block-user", authenticate, async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    const userId = req.user.id;
+
+    const chat = await Chat.findByPk(chatId);
+
+    if (!chat) {
+      return res.status(404).json({ message: "Chat not found" });
+    }
+
+    await chat.update({
+      requestStatus: "blocked",
+      isMsgReqAccepted: false,
+    });
+
+    return res.json({
+      message: "User blocked successfully",
+      chatId,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error blocking user",
+      error: error.message,
+    });
+  }
+});
+
+router.post("/unblock-user", authenticate, async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    const userId = req.user.id;
+
+    const chat = await Chat.findByPk(chatId);
+
+    if (!chat) {
+      return res.status(404).json({
+        message: "Chat not found",
+      });
+    }
+
+    // check chat is actually blocked
+    if (chat.requestStatus !== "blocked") {
+      return res.status(400).json({
+        message: "Chat is not blocked",
+      });
+    }
+
+    // Only receiver (non-request sender) can unblock
+    if (chat.requestSenderId === userId) {
+      return res.status(403).json({
+        message: "Sender cannot unblock",
+      });
+    }
+
+    await chat.update({
+      requestStatus: "accepted",   // or "pending" (your choice)
+      isMsgReqAccepted: true,
+    });
+
+    return res.json({
+      message: "User unblocked successfully",
+      chatId,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error unblocking user",
+      error: error.message,
+    });
+  }
+});
 
 return router;
 };
