@@ -14,7 +14,7 @@ app.use(cors());
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-const { User,sequelize,UserFollowers,FollowRequest,Chat,Message } = require("./db");
+const { User,sequelize,Chat,Message } = require("./db");
 
 const authenticate = require("./src/middleware/auth/Authentication");
 // ✅ Setup nodemailer transporter
@@ -568,8 +568,6 @@ app.get("/check-uniqueId/:uniqueId", async (req, res) => {
   }
 });
 
-
-
 app.post("/register/:userId", authenticate, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -822,8 +820,6 @@ const aboutStory = require("./src/routes/about/AboutStory");
 app.use("/about",aboutStory)
 
 app.use("/posts", postRoutes);
-
-
 
 server.listen(4000, () => {
   console.log("🚀 Server running on http://localhost:4000");
